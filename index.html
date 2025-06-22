@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="timer-container">
+        <h1 id="timer">25:00</h1>
+        
+        <div class="duration-input">
+            <label for="durationInput">Set Duration (minutes):</label>
+            <input type="number" id="durationInput" min="1" max="120" value="25">
+            <button id="setDurationBtn">Set</button>
+        </div>
+        
+        <div class="buttons">
+            <button id="startBtn">Start</button>
+            <button id="pauseBtn" disabled>Pause</button>
+            <button id="stopBtn">Stop</button>
+        </div>
+        
+        <div class="extra-controls">
+            <button id="add5Btn">+5 Minutes</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
