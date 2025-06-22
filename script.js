@@ -1,129 +1,102 @@
-const timerDisplay = document.getElementById('timer');
-const startBtn = document.getElementById('startBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const stopBtn = document.getElementById('stopBtn');
-const durationInput = document.getElementById('durationInput');
-const setDurationBtn = document.getElementById('setDurationBtn');
-const add5Btn = document.getElementById('add5Btn');
+let workDuration = 25 * 60;
+let restDuration = 5 * 60;
+let isWork = true;
+let timeLeft = workDuration;
+let timerInterval = null;
 
-let timer;
-let timeLeft = 25 * 60; // Default 25 minutes
-let running = false;
-let paused = false;
-let originalTime = 25 * 60;
+const timerDisplay = document.getElementById('timer');
+const sessionLabel = document.getElementById('session-label');
+const startBtn = document.getElementById('start');
+const pauseBtn = document.getElementById('pause');
+const resetBtn = document.getElementById('reset');
+const chime = document.getElementById('chime');
+
+const workDurationInput = document.getElementById('work-duration');
+const restDurationInput = document.getElementById('rest-duration');
+const setDurationsBtn = document.getElementById('set-durations');
 
 function updateDisplay() {
-    const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-    const seconds = (timeLeft % 60).toString().padStart(2, '0');
-    timerDisplay.textContent = `${minutes}:${seconds}`;
+  const min = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+  const sec = String(timeLeft % 60).padStart(2, '0');
+  timerDisplay.textContent = `${min}:${sec}`;
+  sessionLabel.textContent = isWork ? 'Work' : 'Rest';
 }
 
-function updateButtonStates() {
-    if (running && !paused) {
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
-        stopBtn.disabled = false;
-        durationInput.disabled = true;
-        setDurationBtn.disabled = true;
-    } else if (running && paused) {
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        stopBtn.disabled = false;
-        durationInput.disabled = true;
-        setDurationBtn.disabled = true;
-    } else {
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-        stopBtn.disabled = true;
-        durationInput.disabled = false;
-        setDurationBtn.disabled = false;
-    }
+function switchSession() {
+  isWork = !isWork;
+  timeLeft = isWork ? workDuration : restDuration;
+  updateDisplay();
+}
+
+function playChime() {
+  alert('Session has finished!');
+  chime.currentTime = 0;
+  const playPromise = chime.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.error("Audio playback failed:", error);
+    });
+  }
+}
+
+function tick() {
+  if (timeLeft > 0) {
+    timeLeft--;
+    updateDisplay();
+  } else {
+    playChime();
+    switchSession();
+  }
 }
 
 function startTimer() {
-    if (running && !paused) return;
-    
-    if (paused) {
-        // Resume from pause
-        paused = false;
-        startBtn.textContent = 'Start';
-        pauseBtn.textContent = 'Pause';
-    } else {
-        // Start fresh
-        running = true;
-        originalTime = timeLeft;
+  if (!timerInterval) {
+    // Play and immediately pause the chime on a user gesture to unlock audio.
+    const playPromise = chime.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        chime.pause();
+      }).catch(error => {
+        console.error("Failed to unlock audio:", error);
+      });
     }
-    
-    updateButtonStates();
-    
-    timer = setInterval(() => {
-        if (timeLeft > 0) {
-            timeLeft--;
-            updateDisplay();
-        } else {
-            clearInterval(timer);
-            running = false;
-            paused = false;
-            updateButtonStates();
-            alert('Timer finished!');
-        }
-    }, 1000);
+    timerInterval = setInterval(tick, 1000);
+  }
 }
 
 function pauseTimer() {
-    if (!running || paused) return;
-    
-    clearInterval(timer);
-    paused = true;
-    startBtn.textContent = 'Resume';
-    pauseBtn.textContent = 'Paused';
-    updateButtonStates();
+  clearInterval(timerInterval);
+  timerInterval = null;
 }
 
-function stopTimer() {
-    clearInterval(timer);
-    running = false;
-    paused = false;
-    timeLeft = originalTime;
-    startBtn.textContent = 'Start';
-    pauseBtn.textContent = 'Pause';
-    updateDisplay();
-    updateButtonStates();
+function resetTimer() {
+  pauseTimer();
+  isWork = true;
+  timeLeft = workDuration;
+  updateDisplay();
 }
 
-function setDuration() {
-    const minutes = parseInt(durationInput.value);
-    if (minutes >= 1 && minutes <= 120) {
-        timeLeft = minutes * 60;
-        originalTime = timeLeft;
-        updateDisplay();
-    } else {
-        alert('Please enter a duration between 1 and 120 minutes.');
-    }
+function setDurations() {
+  pauseTimer(); // Stop the timer before changing durations
+  workDuration = parseInt(workDurationInput.value) * 60;
+  restDuration = parseInt(restDurationInput.value) * 60;
+
+  if (isWork) {
+    timeLeft = workDuration;
+  } else {
+    timeLeft = restDuration;
+  }
+  
+  if (workDuration > 0 && restDuration > 0) {
+      updateDisplay();
+  } else {
+      alert("Please set a valid duration.")
+  }
 }
 
-function add5Minutes() {
-    timeLeft += 5 * 60; // Add 5 minutes
-    if (!running) {
-        originalTime = timeLeft;
-    }
-    updateDisplay();
-}
-
-// Event listeners
 startBtn.addEventListener('click', startTimer);
 pauseBtn.addEventListener('click', pauseTimer);
-stopBtn.addEventListener('click', stopTimer);
-setDurationBtn.addEventListener('click', setDuration);
-add5Btn.addEventListener('click', add5Minutes);
+resetBtn.addEventListener('click', resetTimer);
+setDurationsBtn.addEventListener('click', setDurations);
 
-// Allow Enter key to set duration
-durationInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        setDuration();
-    }
-});
-
-// Initialize
-updateDisplay();
-updateButtonStates(); 
+updateDisplay(); 
