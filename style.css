@@ -15,6 +15,7 @@ body {
   height: 100vh;
   z-index: 0;
 }
+
 .background-shapes::before, .background-shapes::after {
   content: '';
   position: absolute;
@@ -40,7 +41,7 @@ body {
 .glass-card {
   position: relative;
   z-index: 1;
-  width: 350px;
+  width: 450px;
   padding: 2.5rem 2rem;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.12);
@@ -51,6 +52,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.glass-card h1 {
+  font-size: 2.2rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 8px #0008;
+  letter-spacing: 1px;
+  text-align: center;
+  font-weight: 700;
 }
 
 #session-label {
